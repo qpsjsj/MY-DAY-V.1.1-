@@ -1,0 +1,296 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: default-deny all unspecified paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Shared security primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    // Entity blueprint validation: UserWorkspaceMeta
+    function isValidUserWorkspaceMeta(data, userId) {
+      return data.keys().hasAll([
+          'uid',
+          'email',
+          'displayName',
+          'stage',
+          'hasOpenedApp',
+          'activePlannerId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'email',
+          'displayName',
+          'stage',
+          'hasOpenedApp',
+          'activePlannerId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.uid is string
+        && isValidId(data.uid)
+        && data.uid == userId
+        && data.uid == request.auth.uid
+        && data.email is string
+        && data.email.size() <= 254
+        && data.displayName is string
+        && data.displayName.size() <= 80
+        && data.stage is string
+        && data.stage in ['welcome', 'onboarding', 'app']
+        && data.hasOpenedApp is bool
+        && data.activePlannerId is string
+        && isValidId(data.activePlannerId)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Entity blueprint validation: PlannerState nested map
+    function isValidPlannerStateMap(d) {
+      return d is map
+        && d.keys().hasAll([
+          'version',
+          'stage',
+          'profile',
+          'design',
+          'notifications',
+          'categoryColors',
+          'monthlyBudget',
+          'widgets',
+          'customWidgets',
+          'schedules',
+          'todos',
+          'habits',
+          'ddays',
+          'focusEntries',
+          'expenses',
+          'notes',
+          'routines',
+          'checklists'
+        ])
+        && d.keys().hasOnly([
+          'version',
+          'stage',
+          'profile',
+          'design',
+          'notifications',
+          'categoryColors',
+          'monthlyBudget',
+          'widgets',
+          'customWidgets',
+          'schedules',
+          'todos',
+          'habits',
+          'ddays',
+          'focusEntries',
+          'expenses',
+          'notes',
+          'routines',
+          'checklists'
+        ])
+        && d.version is int
+        && d.version >= 1
+        && d.version <= 10
+        && d.stage is string
+        && d.stage in ['welcome', 'onboarding', 'app']
+        && d.profile is map
+        && d.profile.weeklyGoal is string
+        && d.profile.weeklyGoal.size() <= 300
+        && d.profile.purposes is list
+        && d.profile.purposes.size() <= 20
+        && (d.profile.purposes.size() == 0 || d.profile.purposes[0] is string)
+        && d.profile.busyHours is list
+        && d.profile.busyHours.size() <= 24
+        && (d.profile.busyHours.size() == 0 || d.profile.busyHours[0] is string)
+        && d.design is map
+        && d.design.theme is string
+        && d.design.theme in ['cream', 'white', 'sage', 'lavender', 'pastel', 'monotone', 'dark']
+        && d.design.accent is string
+        && d.design.accent in ['sage', 'lavender', 'charcoal', 'ocean', 'coral', 'forest']
+        && d.design.font is string
+        && d.design.font in ['sans', 'rounded', 'serif', 'mono']
+        && d.design.defaultView is string
+        && d.design.defaultView in ['month', 'week', 'day']
+        && d.design.layout is string
+        && d.design.layout in ['simple', 'diary', 'timetable']
+        && d.design.weekStart is string
+        && d.design.weekStart in ['sunday', 'monday']
+        && d.design.timeFormat is string
+        && d.design.timeFormat in ['12h', '24h']
+        && d.notifications is map
+        && d.notifications.conflictAlert is bool
+        && d.notifications.deadlineAlert is bool
+        && d.notifications.dailySummary is bool
+        && d.notifications.summaryTime is string
+        && d.notifications.summaryTime.size() <= 10
+        && d.categoryColors is map
+        && d.categoryColors.size() <= 50
+        && d.monthlyBudget is number
+        && d.monthlyBudget >= 0
+        && d.widgets is list
+        && d.widgets.size() <= 50
+        && (d.widgets.size() == 0 || d.widgets[0] is map)
+        && d.customWidgets is list
+        && d.customWidgets.size() <= 30
+        && (d.customWidgets.size() == 0 || d.customWidgets[0] is map)
+        && d.schedules is list
+        && d.schedules.size() <= 1000
+        && (d.schedules.size() == 0 || d.schedules[0] is map)
+        && d.todos is list
+        && d.todos.size() <= 1000
+        && (d.todos.size() == 0 || d.todos[0] is map)
+        && d.habits is list
+        && d.habits.size() <= 100
+        && (d.habits.size() == 0 || d.habits[0] is map)
+        && d.ddays is list
+        && d.ddays.size() <= 100
+        && (d.ddays.size() == 0 || d.ddays[0] is map)
+        && d.focusEntries is list
+        && d.focusEntries.size() <= 500
+        && (d.focusEntries.size() == 0 || d.focusEntries[0] is map)
+        && d.expenses is list
+        && d.expenses.size() <= 1000
+        && (d.expenses.size() == 0 || d.expenses[0] is map)
+        && d.notes is list
+        && d.notes.size() <= 500
+        && (d.notes.size() == 0 || d.notes[0] is map)
+        && d.routines is list
+        && d.routines.size() <= 100
+        && (d.routines.size() == 0 || d.routines[0] is map)
+        && d.checklists is list
+        && d.checklists.size() <= 500
+        && (d.checklists.size() == 0 || d.checklists[0] is map);
+    }
+
+    // Entity blueprint validation: UserPlanner
+    function isValidUserPlanner(data, userId, plannerId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'plannerId',
+          'name',
+          'clientUpdatedAt',
+          'createdAt',
+          'updatedAt',
+          'data'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'plannerId',
+          'name',
+          'clientUpdatedAt',
+          'createdAt',
+          'updatedAt',
+          'data'
+        ])
+        && data.ownerId is string
+        && isValidId(data.ownerId)
+        && data.ownerId == userId
+        && data.ownerId == request.auth.uid
+        && data.plannerId is string
+        && isValidId(data.plannerId)
+        && data.plannerId == plannerId
+        && data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 40
+        && data.clientUpdatedAt is string
+        && data.clientUpdatedAt.size() <= 64
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && isValidPlannerStateMap(data.data);
+    }
+
+    // /users/{userId}: strictly private workspace metadata & PII
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+
+      allow create: if isValidId(userId)
+        && isVerifiedOwner(userId)
+        && isValidUserWorkspaceMeta(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(userId)
+        && isVerifiedOwner(userId)
+        && isValidUserWorkspaceMeta(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'email',
+          'displayName',
+          'stage',
+          'hasOpenedApp',
+          'activePlannerId',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+
+      // /users/{userId}/planners/{plannerId}: user's independent planners
+      match /planners/{plannerId} {
+        allow get: if isValidId(userId) && isValidId(plannerId) && isOwner(userId);
+        allow list: if isValidId(userId)
+          && isOwner(userId)
+          && existing().ownerId == request.auth.uid;
+
+        allow create: if isValidId(userId)
+          && isValidId(plannerId)
+          && isVerifiedOwner(userId)
+          && isValidUserPlanner(incoming(), userId, plannerId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(userId));
+
+        allow update: if isValidId(userId)
+          && isValidId(plannerId)
+          && isVerifiedOwner(userId)
+          && isValidUserPlanner(incoming(), userId, plannerId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().plannerId == existing().plannerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && (
+            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'clientUpdatedAt', 'updatedAt'])
+            || incoming().diff(existing()).affectedKeys().hasOnly(['data', 'clientUpdatedAt', 'updatedAt'])
+            || incoming().diff(existing()).affectedKeys().hasOnly(['name', 'data', 'clientUpdatedAt', 'updatedAt'])
+          );
+
+        allow delete: if isValidId(userId)
+          && isValidId(plannerId)
+          && isVerifiedOwner(userId)
+          && exists(/databases/$(database)/documents/users/$(userId));
+      }
+    }
+  }
+}

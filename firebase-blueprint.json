@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "UserWorkspaceMeta": {
+      "title": "UserWorkspaceMeta",
+      "description": "Private workspace metadata and active planner pointer isolated per authenticated user UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Owner email address (PII, accessible only by the owner).",
+          "maxLength": 254
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name shown in user menu.",
+          "maxLength": 80
+        },
+        "stage": {
+          "type": "string",
+          "enum": ["welcome", "onboarding", "app"],
+          "description": "Current workspace stage."
+        },
+        "hasOpenedApp": {
+          "type": "boolean",
+          "description": "Whether the user has entered the planner workspace."
+        },
+        "activePlannerId": {
+          "type": "string",
+          "description": "Currently selected planner document ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the workspace was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the workspace metadata was last updated."
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "displayName",
+        "stage",
+        "hasOpenedApp",
+        "activePlannerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "UserPlanner": {
+      "title": "UserPlanner",
+      "description": "Individual MY DAY planner document containing schedules, todos, widgets, profile, and design settings.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the planner owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "plannerId": {
+          "type": "string",
+          "description": "Unique planner document ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "User-facing planner name.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "clientUpdatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Client ISO timestamp for ordering and sync comparison.",
+          "maxLength": 64
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the planner was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the planner was last saved."
+        },
+        "data": {
+          "type": "object",
+          "description": "Native Firestore map storing PlannerState (profile, design, notifications, categoryColors, monthlyBudget, widgets, customWidgets, schedules, todos, habits, ddays, focusEntries, expenses, notes, routines, checklists)."
+        }
+      },
+      "required": [
+        "ownerId",
+        "plannerId",
+        "name",
+        "clientUpdatedAt",
+        "createdAt",
+        "updatedAt",
+        "data"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserWorkspaceMeta"
+      },
+      "description": "Private user workspace metadata and PII isolated strictly to the owning UID."
+    },
+    "/users/{userId}/planners/{plannerId}": {
+      "schema": {
+        "$ref": "#/entities/UserPlanner"
+      },
+      "description": "User-owned planners subcollection storing schedules, todos, widgets, and customization per planner."
+    }
+  }
+}

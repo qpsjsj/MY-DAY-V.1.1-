@@ -1,0 +1,6 @@
+{
+  "name": "MY DAY — AI 맞춤형 라이프 플래너",
+  "description": "당신의 하루를 당신답게. AI가 자연어 요청을 이해해 일정, 할 일, 테마, 위젯을 맞춰주는 개인 맞춤형 라이프 플래너입니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

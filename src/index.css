@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg-canvas: #faf8f4;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f2efe8;
+  --border-hairline: #e4dfd5;
+  --text-primary: #1f2421;
+  --text-secondary: #5c635e;
+  --text-muted: #858c87;
+  --accent-primary: #4f7760;
+  --accent-soft: #e8f0eb;
+  --accent-contrast: #ffffff;
+  --font-planner: 'Plus Jakarta Sans', 'Noto Sans KR', system-ui, sans-serif;
+}
+
+.theme-cream {
+  --bg-canvas: #faf7f0;
+  --bg-surface: #fffdf9;
+  --bg-subtle: #f2ede2;
+  --border-hairline: #e6dfd1;
+  --text-primary: #24211c;
+  --text-secondary: #5e584f;
+  --text-muted: #8a8378;
+}
+
+.theme-white {
+  --bg-canvas: #f8f9fa;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f3f5;
+  --border-hairline: #e5e7eb;
+  --text-primary: #181a1c;
+  --text-secondary: #525860;
+  --text-muted: #868e96;
+}
+
+.theme-sage {
+  --bg-canvas: #f2f6f2;
+  --bg-surface: #fbfdfb;
+  --bg-subtle: #e4ece4;
+  --border-hairline: #d4e0d4;
+  --text-primary: #1c2820;
+  --text-secondary: #4e5e53;
+  --text-muted: #78887d;
+}
+
+.theme-lavender {
+  --bg-canvas: #f6f4fa;
+  --bg-surface: #fdfcff;
+  --bg-subtle: #ebe7f4;
+  --border-hairline: #ddd7eb;
+  --text-primary: #221f2b;
+  --text-secondary: #575266;
+  --text-muted: #837d94;
+}
+
+.theme-pastel {
+  --bg-canvas: #fdf6f5;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f7eae8;
+  --border-hairline: #ebd8d5;
+  --text-primary: #292224;
+  --text-secondary: #66585b;
+  --text-muted: #948488;
+}
+
+.theme-monotone {
+  --bg-canvas: #f4f4f5;
+  --bg-surface: #ffffff;
+  --bg-subtle: #e4e4e7;
+  --border-hairline: #d4d4d8;
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+}
+
+.theme-dark {
+  --bg-canvas: #121417;
+  --bg-surface: #1a1d22;
+  --bg-subtle: #23272e;
+  --border-hairline: #2d323b;
+  --text-primary: #f1f3f5;
+  --text-secondary: #b0b7c0;
+  --text-muted: #7b838e;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-planner);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-planner-sans {
+  --font-planner: 'Plus Jakarta Sans', 'Noto Sans KR', system-ui, sans-serif;
+  font-family: var(--font-planner);
+}
+
+.font-planner-rounded {
+  --font-planner: 'Gowun Dodum', 'Noto Sans KR', system-ui, sans-serif;
+  font-family: var(--font-planner);
+}
+
+.font-planner-serif {
+  --font-planner: 'Noto Serif KR', Georgia, serif;
+  font-family: var(--font-planner);
+}
+
+.font-planner-mono {
+  --font-planner: 'JetBrains Mono', 'Noto Sans KR', monospace;
+  font-family: var(--font-planner);
+}
+
+.font-calligraphy {
+  font-family: 'Nanum Brush Script', 'Noto Serif KR', cursive, serif;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.planner-surface {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+}
+
+.planner-subtle {
+  background-color: var(--bg-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
